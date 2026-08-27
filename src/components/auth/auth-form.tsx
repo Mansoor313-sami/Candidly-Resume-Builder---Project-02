@@ -11,6 +11,7 @@ import {
   sendEmailVerification,
   GoogleAuthProvider,
   getRedirectResult,
+  onAuthStateChanged,
   signInWithRedirect,
   signInWithPopup,
 } from "firebase/auth";
@@ -65,11 +66,15 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
               : "We couldn't complete that request. Please try again.";
   }
 
-  // Mobile browsers commonly block OAuth pop-ups. On returning from Firebase's
-  // redirect flow, complete the sign-in and take the user to their dashboard.
+  // Mobile browsers commonly block OAuth pop-ups. After Firebase returns from
+  // its redirect flow, the auth-state subscription is the reliable source of
+  // truth—even when getRedirectResult() is null on a particular browser.
   useEffect(() => {
     if (!auth) return;
     let active = true;
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (active && user) router.replace("/dashboard");
+    });
     getRedirectResult(auth)
       .then((result) => {
         if (active && result) router.replace("/dashboard");
@@ -77,7 +82,10 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
       .catch((err: { code?: string }) => {
         if (active) setError(friendly(err.code));
       });
-    return () => { active = false; };
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [router]);
 
   async function submit(e: React.FormEvent) {

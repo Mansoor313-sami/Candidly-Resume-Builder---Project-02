@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import {
   createUserWithEmailAndPassword,
@@ -10,6 +10,8 @@ import {
   sendPasswordResetEmail,
   sendEmailVerification,
   GoogleAuthProvider,
+  getRedirectResult,
+  signInWithRedirect,
   signInWithPopup,
 } from "firebase/auth";
 import { ArrowRight, Check, Eye, EyeOff, Sparkles } from "lucide-react";
@@ -53,11 +55,30 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
         : code === "auth/weak-password"
           ? "Choose a password with at least 6 characters."
           : code === "auth/popup-closed-by-user"
-            ? "Google sign-in was cancelled."
-            : code === "auth/operation-not-allowed"
-              ? "This sign-in method isn't enabled in Firebase yet."
+          ? "Google sign-in was cancelled."
+          : code === "auth/operation-not-allowed"
+            ? "This sign-in method isn't enabled in Firebase yet."
+            : code === "auth/unauthorized-domain"
+              ? "This website domain is not authorized in Firebase Authentication yet."
+              : code === "auth/account-exists-with-different-credential"
+                ? "An account with this email already exists. Sign in using the method you used originally."
               : "We couldn't complete that request. Please try again.";
   }
+
+  // Mobile browsers commonly block OAuth pop-ups. On returning from Firebase's
+  // redirect flow, complete the sign-in and take the user to their dashboard.
+  useEffect(() => {
+    if (!auth) return;
+    let active = true;
+    getRedirectResult(auth)
+      .then((result) => {
+        if (active && result) router.replace("/dashboard");
+      })
+      .catch((err: { code?: string }) => {
+        if (active) setError(friendly(err.code));
+      });
+    return () => { active = false; };
+  }, [router]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -92,7 +113,16 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
     setError("");
     setNotice("");
     try {
-      await signInWithPopup(auth, new GoogleAuthProvider());
+      const provider = new GoogleAuthProvider();
+      const isMobile = window.matchMedia("(max-width: 767px)").matches
+        || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+
+      await signInWithPopup(auth, provider);
       router.push("/dashboard");
     } catch (err) {
       setError(friendly((err as { code?: string }).code));

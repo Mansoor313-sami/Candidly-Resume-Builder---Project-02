@@ -1,0 +1,326 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   DESIGN TOKENS
+   All theme-aware colors are stored as "R G B" triplets so that
+   Tailwind's `rgb(var(--x) / <alpha>)` and manual rgb() both work.
+   ------------------------------------------------------------
+   LIGHT THEME: a charming blend of soft periwinkle (indigo-50)
+   and rose (pink-50), lifted with a hint of cyan — a calm dawn
+   aurora. Accents are a bold violet -> fuchsia gradient.
+   ============================================================ */
+:root {
+  /* Font stacks (families are loaded via <link> in layout.tsx) */
+  --font-sans: "Inter";
+  --font-display: "Sora";
+  --font-serif: "Fraunces";
+
+  --surface: 255 255 255;          /* solid panels */
+  --card: 255 255 255;             /* cards */
+  --border: 214 230 219;           /* hairlines (soft green-gray) */
+  --text: 16 26 20;                /* near-black green-slate */
+  --muted: 88 104 94;              /* secondary text */
+  --shadow: 20 71 45;              /* green-tinted shadow base */
+
+  --brand: 22 163 74;              /* emerald-600 */
+  --brand-soft: 220 252 231;       /* emerald-100 */
+  --brand-2: 13 148 136;           /* teal-600 */
+  --brand-3: 132 204 22;           /* lime-500 */
+
+  /* Aurora background blobs — Emerald Lime blend (full colors) */
+  --aurora-1: #d7f5cc;             /* lime mist */
+  --aurora-2: #d9f9e6;             /* mint */
+  --aurora-3: #eef7cf;             /* pale lime */
+  --page-base: #f2fbef;            /* base wash */
+  color-scheme: light;
+}
+
+.dark {
+  --surface: 22 19 31;
+  --card: 26 22 38;
+  --border: 46 40 64;
+  --text: 236 233 245;
+  --muted: 162 157 180;
+  --shadow: 0 0 0;
+
+  --brand: 52 211 153;             /* emerald-400 (brighter on dark) */
+  --brand-soft: 20 53 42;
+  --brand-2: 45 212 191;           /* teal-400 */
+  --brand-3: 163 230 53;           /* lime-400 */
+
+  --aurora-1: #103a22;
+  --aurora-2: #0e3b34;
+  --aurora-3: #2a3d12;
+  --page-base: #08110c;
+  color-scheme: dark;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: rgb(var(--text));
+  background-color: var(--page-base);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color .4s ease, color .3s ease;
+}
+
+/* The animated aurora sits behind everything on themed pages. */
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.aurora::before,
+.aurora::after {
+  content: "";
+  position: absolute;
+  width: 55vw;
+  height: 55vw;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: .8;
+}
+.aurora::before {
+  top: -12vw;
+  left: -8vw;
+  background: radial-gradient(circle at 30% 30%, var(--aurora-1), transparent 70%);
+  animation: float-slow 16s ease-in-out infinite;
+}
+.aurora::after {
+  bottom: -18vw;
+  right: -10vw;
+  background: radial-gradient(circle at 60% 60%, var(--aurora-2), transparent 70%);
+  animation: float-slow 20s ease-in-out infinite reverse;
+}
+.aurora-3 {
+  position: absolute;
+  top: 30%;
+  left: 45%;
+  width: 40vw;
+  height: 40vw;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: .55;
+  background: radial-gradient(circle, var(--aurora-3), transparent 70%);
+  animation: float-slow 24s ease-in-out infinite;
+}
+
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { text-decoration: none; color: inherit; }
+
+::selection { background: rgb(var(--brand) / .25); }
+
+.shell { max-width: 1200px; margin: auto; padding: 0 24px; }
+@media (max-width: 640px) { .shell { padding: 0 18px; } }
+
+/* Focus ring used on interactive brand elements */
+.focus-ring:focus-visible {
+  outline: 3px solid rgb(var(--brand) / .55);
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+
+/* Slim, themed scrollbars */
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--muted) / .35);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--muted) / .55); background-clip: content-box; }
+
+/* Top navigation progress bar (see components/ui/route-progress.tsx) */
+.route-bar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 3px;
+  z-index: 300;
+  overflow: hidden;
+  pointer-events: none;
+}
+.route-bar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 45%;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(90deg, transparent, rgb(var(--brand)), rgb(var(--brand-2)));
+  box-shadow: 0 0 12px 1px rgb(var(--brand) / .55);
+  animation: routebar 0.9s infinite cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes routebar {
+  0% { left: -45%; }
+  50% { left: 30%; }
+  100% { left: 100%; }
+}
+
+/* ============================================================
+   COMPONENT CLASSES
+   ============================================================ */
+@layer components {
+  /* Glassy card that adapts to the theme */
+  .card {
+    border: 1px solid rgb(var(--border));
+    background: rgb(var(--card) / .85);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 1px 2px rgb(var(--shadow) / .18), 0 26px 60px -34px rgb(var(--shadow) / .55);
+  }
+  .glass {
+    border: 1px solid rgb(var(--border) / .8);
+    background: rgb(var(--surface) / .6);
+    backdrop-filter: blur(14px) saturate(140%);
+  }
+
+  /* Form controls */
+  .label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: rgb(var(--muted));
+    margin: 0 0 7px;
+  }
+  .field {
+    width: 100%;
+    border: 1.5px solid rgb(var(--border));
+    border-radius: 12px;
+    padding: 11px 13px;
+    background: rgb(var(--surface));
+    color: rgb(var(--text));
+    transition: border-color .18s, box-shadow .18s, background .18s;
+  }
+  .field::placeholder { color: rgb(var(--muted) / .7); }
+  .field:focus {
+    outline: none;
+    border-color: rgb(var(--brand));
+    box-shadow: 0 0 0 4px rgb(var(--brand) / .16);
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 12px;
+    padding: 11px 17px;
+    font-weight: 600;
+    line-height: 1;
+    transition: transform .16s cubic-bezier(.2,.7,.3,1), box-shadow .2s, background .2s, opacity .2s, border-color .2s;
+    will-change: transform;
+  }
+  .btn:active { transform: translateY(1px) scale(.99); }
+  .btn:disabled { opacity: .55; cursor: not-allowed; }
+
+  .btn-primary {
+    color: #fff;
+    background-image: linear-gradient(120deg, rgb(var(--brand)), rgb(var(--brand-2)));
+    background-size: 160% 160%;
+    box-shadow: 0 10px 30px -10px rgb(var(--brand) / .7);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-position: 100% 50%;
+    transform: translateY(-2px);
+    box-shadow: 0 16px 38px -10px rgb(var(--brand) / .8);
+  }
+
+  .btn-secondary {
+    border: 1.5px solid rgb(var(--border));
+    background: rgb(var(--surface) / .7);
+    color: rgb(var(--text));
+    backdrop-filter: blur(8px);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    border-color: rgb(var(--brand) / .5);
+    color: rgb(var(--brand));
+    transform: translateY(-2px);
+  }
+
+  .btn-ghost { background: transparent; color: rgb(var(--text)); }
+  .btn-ghost:hover:not(:disabled) { background: rgb(var(--brand) / .1); color: rgb(var(--brand)); }
+
+  /* Small pill/badge */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* Gradient text for headlines */
+  .text-gradient {
+    background-image: linear-gradient(115deg, rgb(var(--brand)), rgb(var(--brand-2)) 55%, rgb(var(--brand-3)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Loading skeleton shimmer */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: rgb(var(--muted) / .16);
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgb(var(--surface) / .55), transparent);
+    animation: shimmer 1.6s infinite;
+  }
+}
+
+/* ============================================================
+   RESUME PAPER
+   The rendered resume is ALWAYS a light document (it prints on
+   white), so it uses its own fixed colors, not the theme tokens.
+   Fixed hex/rgb also keeps html2canvas PDF capture clean.
+   ============================================================ */
+.resume-paper {
+  --rf-head: "Sora", system-ui, sans-serif;
+  --rf-body: "Inter", system-ui, sans-serif;
+  background: #ffffff;
+  color: #1a1a24;
+  font-family: var(--rf-body);
+  box-shadow: 0 30px 70px -25px rgba(30, 20, 60, .35);
+  width: 210mm;
+  min-height: 297mm;
+  padding: 15mm 16mm;
+  border-radius: 4px;
+}
+/* Per-resume font slots (set by the font picker via lib/fonts.ts) */
+.rf-head { font-family: var(--rf-head); }
+.rf-body { font-family: var(--rf-body); }
+@media (max-width: 920px) {
+  .resume-paper { width: 100%; min-height: auto; padding: 26px; }
+}
+
+/* ============================================================
+   PRINT — hide the app chrome, show only the paper
+   ============================================================ */
+@media print {
+  body { background: #fff !important; }
+  .aurora, .no-print { display: none !important; }
+  .resume-paper { width: 210mm; box-shadow: none; margin: 0; border-radius: 0; }
+  @page { margin: 0; }
+}

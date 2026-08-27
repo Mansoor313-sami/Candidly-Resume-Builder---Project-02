@@ -9,7 +9,7 @@ Candidly is a full-stack AI resume builder. Create a resume through guided secti
 | Resource | Link |
 | --- | --- |
 | GitHub repository | [Mansoor313-sami/Candidly-Resume-Builder---Project-02](https://github.com/Mansoor313-sami/Candidly-Resume-Builder---Project-02) |
-| Live deployment (Vercel) | **Coming soon — Vercel URL will be added here after deployment.** |
+| Live deployment (Vercel) | [project-02-livid.vercel.app](https://project-02-livid.vercel.app/) |
 
 ## Highlights
 

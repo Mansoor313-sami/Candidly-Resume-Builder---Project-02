@@ -62,13 +62,19 @@ npm run typecheck
 npm run build
 ```
 
-## Deploy to Vercel
+## Deployment
 
-1. Import this GitHub repository into [Vercel](https://vercel.com/new).
-2. Vercel will detect the **Next.js** framework automatically; retain the default build settings.
-3. In **Project Settings → Environment Variables**, add every variable listed below. Add secrets for Production, Preview, and Development as appropriate.
-4. Set `NEXT_PUBLIC_SITE_URL` to the final `https://…vercel.app` URL after the first deployment, then redeploy once.
-5. Deploy. Future pushes to `main` will create production deployments automatically.
+**Status:** Live on Vercel ✅
+
+**Live URL:** [https://project-02-livid.vercel.app/](https://project-02-livid.vercel.app/)
+
+The project is deployed as a Next.js application on Vercel. For future configuration changes, add or update environment variables in **Vercel → Project Settings → Environment Variables**, then create a new deployment from the `main` branch.
+
+Set the following value in Vercel so public-resume metadata uses the live address:
+
+```env
+NEXT_PUBLIC_SITE_URL=https://project-02-livid.vercel.app
+```
 
 > Never paste `GEMINI_API_KEY` or `FIREBASE_ADMIN_PRIVATE_KEY` into client-side code, the repository, screenshots, or public documentation.
 
